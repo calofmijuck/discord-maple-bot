@@ -18,9 +18,4 @@ You'll need:
 
 ## The code
 
-Check out `server.js` to see how it works ✨
-
-We're using the [Eris](https://npm.im/eris) library to interact with the Discord API.
-
-If it's working you should see "Ready!" in the logs.
-
+TODO
