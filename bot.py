@@ -11,6 +11,7 @@ from time import sleep
 # Implementation imports
 from impl.help import get_help_command
 from impl.character_info import get_character_info
+from impl.roll_dice import get_roll_result
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -70,6 +71,16 @@ async def character_info(ctx, name):
         await character_info(ctx, name)
     else:
         await ctx.send(file=info.img, embed=info.embed)
+
+@bot.command(
+    name='주사위',
+    description='주사위 굴리기',
+    brief='주사위 굴리기',
+    aliases=['데굴데굴']
+)
+async def roll_dice(ctx):
+    text = get_roll_result()
+    await ctx.send(text)
 
 
 @bot.command(

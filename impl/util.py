@@ -18,3 +18,9 @@ def get_character_image(name, url):
 
 def encode(name):
     return parse.quote(name)
+
+def bold(s):
+    return "**" + s + "**"
+
+def italic(s):
+    return "_" + s + "_"
