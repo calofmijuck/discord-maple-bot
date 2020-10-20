@@ -74,7 +74,11 @@ def create_embed(
         achievement_text = achievements[0] + "(" + achievements[1] + ")"
 
     embed.add_field(name="업적", value=achievement_text, inline=False)
-    embed.add_field(name="마지막 활동일", value=last_active + "일 전", inline=False)
+
+    last_active_text = "-"
+    if last_active:
+        last_active_text = last_active + "일 전"
+    embed.add_field(name="마지막 활동일", value=last_active_text, inline=False)
 
     return embed
 

@@ -96,7 +96,7 @@ def get_user_summary(parser):
     summary_list = parser.find(class_="user-summary-list").find_all('li')
     level = int(summary_list[0].text.split('.')[1])
     job = summary_list[1].text
-    popularity = int(summary_list[2].text.split('\n')[1])
+    popularity = summary_list[2].text.split('\n')[1]
     return [level, job, popularity]
 
 
@@ -122,7 +122,9 @@ def get_user_ranking(parser):
 
 
 def get_last_active(parser):
-    last_active_data = parser.find(class_="font-size-12 text-white").text
+    last_active_data = parser.find(class_="font-size-12 text-white")
+    if last_active_data == None:
+        return ""
     start_idx = last_active_data.find(':')
     end_idx = last_active_data.find('\n')
     last_active = last_active_data[start_idx + 2: end_idx]
