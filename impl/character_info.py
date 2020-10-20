@@ -125,6 +125,8 @@ def get_last_active(parser):
     last_active_data = parser.find(class_="font-size-12 text-white")
     if last_active_data == None:
         return ""
+    else:
+        last_active_data = last_active_data.text
     start_idx = last_active_data.find(':')
     end_idx = last_active_data.find('\n')
     last_active = last_active_data[start_idx + 2: end_idx]
