@@ -71,7 +71,7 @@ def create_embed(
 
     achievement_text = "-"
     if achievements:
-        achievement_text = achievements[0] + "(" + achievements[1] + ")"
+        achievement_text = achievements[0] + " (" + achievements[1] + ")"
 
     embed.add_field(name="업적", value=achievement_text, inline=False)
 
