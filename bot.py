@@ -5,6 +5,7 @@ import requests
 from discord.ext import commands
 from dotenv import load_dotenv
 from urllib import parse
+from time import sleep
 
 
 # Implementation imports
@@ -19,6 +20,7 @@ COMMAND_PREFIX = "!"
 bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 bot.remove_command('help')
 
+SYNCING = "정보 갱신 중입니다 :hourglass_flowing_sand:"
 
 @bot.event
 async def on_ready():
@@ -59,8 +61,15 @@ async def greetings(ctx, arg):
     usage="[닉네임]"
 )
 async def character_info(ctx, name):
-    img, embed = get_character_info(name)
-    await ctx.send(file=img, embed=embed)
+    info = get_character_info(name)
+    if info.error != None:
+        await ctx.send(info.error)
+    elif info.sync:
+        await ctx.send(SYNCING)
+        sleep(5)
+        await character_info(ctx, name)
+    else:
+        await ctx.send(file=info.img, embed=info.embed)
 
 
 @bot.command(

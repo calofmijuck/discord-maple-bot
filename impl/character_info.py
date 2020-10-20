@@ -1,83 +1,179 @@
 from bs4 import BeautifulSoup
-from urllib import parse
+from time import sleep
 import re
 import requests
 import discord
 
-def parse_info(html, name):
-    world_ranking_text = html.find(class_="\'ranking_other\'")
-    world_ranking = int(world_ranking_text.text.strip())
+from .util import parse_int, get_character_image, encode
+from .CharacterInfo import CharacterInfo
+from .embeds import create_embed
 
-    try:
-        span = html.find(class_='char_img')
-        character_image_url = span.find('img')['src']
-    except:
-        # TODO
-        pass
+MAPLE_GG = "https://maple.gg/u/"
+NO_SUCH_CHARACTER = "캐릭터가 존재하지 않습니다."
 
-    job_group, job = html.find('dd').text.split(' / ')
-
-    td = html.find_all('td')[-4:]
-    level_text = td[0].text
-    experience_text = td[1].text
-    popularity_text = td[2].text
-    guild_name = td[3].text
-
-    if len(guild_name) == 0:
-        guild_name = "-"
-
-    info = [name, world_ranking, character_image_url, job_group, job, level_text, experience_text, popularity_text, guild_name]
-
-    return info
-
-def get_info(name):
-    name_enc = parse.quote(name)
-    
-    req_url = "https://maplestory.nexon.com/Ranking/World/Total?c="
-
-    search_result = requests.get(req_url + name_enc)
-
-    soup = BeautifulSoup(search_result.content, 'html.parser')
-
-    character_info_html = soup.find(class_="search_com_chk")
-
-    if character_info_html == None:
-        raise Exception("No such character")
-
-    character_info = parse_info(character_info_html, name)
-    return character_info
 
 def get_character_info(name):
-    info = get_info(name)
+    parser = fetch_info_page(name)
 
-    name = info[0]
-    name_enc = parse.quote(name)
-    world_ranking = '{:,}'.format(int(info[1]))
-    character_img_url = info[2]
-    job_group = info[3]
-    job = info[4]
-    level_text = info[5]
-    experience_text = info[6]
-    popularity_text = info[7]
-    guild_name = info[8]
+    if not character_exists(parser):
+        return CharacterInfo(error=NO_SUCH_CHARACTER)
 
-    img = get_character_img(name, character_img_url)
+    if not character_updated(name, parser):
+        return CharacterInfo(sync=True)
 
-    title_url = "https://maple.gg/u/" + name_enc
-    description = job + " / " + level_text
-    embed = discord.Embed(title=name, url=title_url,
-                          description=description, color=0x008000)
-    embed.set_image(url="attachment://image.png")
-    embed.add_field(name="종합랭킹", value=str(world_ranking) + "위", inline=False)
-    embed.add_field(name="EXP", value=experience_text, inline=False)
-    embed.add_field(name="인기도", value=popularity_text, inline=False)
-    embed.add_field(name="길드", value=guild_name, inline=False)
-    return img, embed
+    return parse_character_info(name, parser)
 
-def get_character_img(name, url):
-    img_data = requests.get(url).content
-    path = 'char_img/' + name + '.png'
-    with open(path, 'wb') as handler:
-        handler.write(img_data)
-    img = discord.File(path, filename="image.png")
-    return img
+
+def fetch_info_page(name):
+    info_page = requests.get(MAPLE_GG + encode(name))
+    parser = BeautifulSoup(info_page.content, 'html.parser')
+    return parser
+
+def character_exists(parser):
+    no_data = parser.find(class_="container mt-5 text-center")
+    if no_data != None:
+        return False
+    else:
+        return True
+
+
+def character_updated(name, parser):
+    sync = parser.find(id="btn-sync").text.strip()
+    if sync == "정보갱신":
+        update_character_info(name)
+        return False
+    else:
+        return True
+
+
+def update_character_info(name):
+    requests.get(MAPLE_GG + encode(name) + "/sync")
+
+
+def parse_character_info(name, parser):
+    world_icon_url = get_world_icon_url(parser)
+    character_img_url = get_character_img_url(parser)
+
+    user_summary = get_user_summary(parser)
+    guild_name = get_guild_name(parser)
+    rankings = get_user_ranking(parser)
+    last_active = get_last_active(parser)
+
+    mureung = get_mureung_info(parser)
+    the_seed = get_seed_info(parser)
+    maple_union = get_maple_union_info(parser)
+    achievements = get_achievements(parser)
+
+    embed = create_embed(
+        name=name,
+        thumbnail=world_icon_url,
+        user_summary=user_summary,
+        guild_name=guild_name,
+        rankings=rankings,
+        last_active=last_active,
+        mureung=mureung,
+        the_seed=the_seed,
+        maple_union=maple_union,
+        achievements=achievements
+    )
+    img = get_character_image(name, character_img_url)
+
+    return CharacterInfo(embed=embed, img=img)
+
+
+def get_world_icon_url(parser):
+    h3 = parser.find('h3')
+    url = h3.find('img')['src']
+    return url
+
+
+def get_character_img_url(parser):
+    url = parser.find(class_="character-image")['src']
+    return url
+
+
+def get_user_summary(parser):
+    summary_list = parser.find(class_="user-summary-list").find_all('li')
+    level = int(summary_list[0].text.split('.')[1])
+    job = summary_list[1].text
+    popularity = int(summary_list[2].text.split('\n')[1])
+    return [level, job, popularity]
+
+
+def get_guild_name(parser):
+    guild_info = parser.find(
+        class_="col-lg-2 col-md-4 col-sm-4 col-12 mt-3").text
+    guild_name = guild_info.split()[1]
+    if guild_name == "(없음)":
+        return "-"
+    else:
+        return guild_name
+
+
+def get_user_ranking(parser):
+    rankings = []
+    ranking_info = parser.find_all(
+        class_="col-lg-2 col-md-4 col-sm-4 col-6 mt-3")
+    for info in ranking_info:
+        rank_data = info.find('span').text
+        rank_value = rank_data.split('위')[0].strip()
+        rankings.append(rank_value)
+    return rankings
+
+
+def get_last_active(parser):
+    last_active_data = parser.find(class_="font-size-12 text-white").text
+    start_idx = last_active_data.find(':')
+    end_idx = last_active_data.find('\n')
+    last_active = last_active_data[start_idx + 2: end_idx]
+    return last_active
+
+
+def get_mureung_info(parser):
+    mureung = parser.find_all(class_="col-lg-3 col-6 mt-3 px-1")[0]
+    floor_data = mureung.find(class_="user-summary-floor font-weight-bold")
+    if floor_data == None:
+        return []
+    else:
+        floor = parse_int(floor_data.text.split()[0])
+        duration = mureung.find(class_="user-summary-duration").text
+        return [floor, duration]
+
+
+def get_seed_info(parser):
+    seed = parser.find_all(class_="col-lg-3 col-6 mt-3 px-1")[1]
+    floor_data = seed.find(class_="user-summary-floor font-weight-bold")
+    if floor_data == None:
+        return []
+    else:
+        floor = parse_int(floor_data.text.split()[0])
+        duration = seed.find(class_="user-summary-duration").text
+        return [floor, duration]
+
+
+def get_maple_union_info(parser):
+    union_data = parser.find_all(class_="col-lg-3 col-6 mt-3 px-1")[2]
+    tier_data = union_data.find(
+        class_="user-summary-tier-string font-weight-bold")
+    if tier_data == None:
+        return []
+    else:
+        tier = tier_data.text.strip()
+        level_data = union_data.find(class_="user-summary-level").text
+        level = parse_int(level_data.split('.')[1])
+        power_data = union_data.find(class_="d-block mb-1").text
+        power = parse_int(power_data.split()[1])
+        return [tier, level, power]
+
+
+def get_achievements(parser):
+    achievement_data = parser.find_all(class_="col-lg-3 col-6 mt-3 px-1")[3]
+    tier_data = achievement_data.find(
+        class_="user-summary-tier-string font-weight-bold")
+    if tier_data == None:
+        return []
+    else:
+        tier = tier_data.text.strip()
+        score_data = achievement_data.find(class_="user-summary-level").text
+        score = score_data.split()[1]
+        return [tier, score]
