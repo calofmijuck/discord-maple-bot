@@ -17,8 +17,10 @@ async def on_ready():
 async def roll(ctx, number_of_dice: int, number_of_sides: int):
     if number_of_sides <= 0:
         await ctx.send("주사위 면의 수는 0 보다 커야 합니다.")
+        return
     if number_of_dice <= 0:
         await ctx.send("주사위 개수는 0 보다 커야 합니다.")
+        return
 
     dice = [
         str(random.choice(range(1, number_of_sides + 1)))
