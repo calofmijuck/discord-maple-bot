@@ -32,7 +32,7 @@ async def on_ready():
 
 @bot.command(
     name="도움말",
-    brief="도움말을 출력합니다"
+    description="도움말과 명령어 목록을 출력합니다.",
 )
 async def help_command(ctx, *args):
     text = get_help_command(ctx.bot, *args)
@@ -41,10 +41,8 @@ async def help_command(ctx, *args):
 
 @bot.command(
     name='주장봇',
-    help='주장봇!',
-    description='desc',
-    brief="주장봇 관련 명령",
-    usage='usage'
+    description='주장봇 관련 명령입니다.',
+    hidden=True
 )
 async def greetings(ctx, arg):
     if arg == '안녕' or arg == '하이':
@@ -59,8 +57,7 @@ async def greetings(ctx, arg):
 
 @bot.command(
     name='정보',
-    description="캐릭터 정보",
-    brief="캐릭터 정보 확인",
+    description="캐릭터의 종합 정보를 확인합니다.",
     usage="[닉네임]"
 )
 async def character_info(ctx, name):
@@ -77,8 +74,7 @@ async def character_info(ctx, name):
 
 @bot.command(
     name='경험치',
-    description="경험치 정보",
-    brief="경험치 정보를 확인",
+    description="캐릭터의 경험치 정보를 확인합니다.",
     usage="[닉네임]"
 )
 async def experience_info(ctx, name):
@@ -91,8 +87,7 @@ async def experience_info(ctx, name):
 
 @bot.command(
     name='주사위',
-    description='주사위 굴리기',
-    brief='주사위 굴리기',
+    description='주사위를 굴립니다. 1 부터 100 까지의 수가 나옵니다.',
     aliases=['데굴데굴']
 )
 async def roll_dice(ctx):
