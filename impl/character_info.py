@@ -3,7 +3,7 @@ from time import sleep
 import requests
 
 from .util import parse_int, get_character_image, encode
-from .CharacterInfo import CharacterInfo
+from .EmbeddedMessage import EmbeddedMessage
 from .embeds import create_info_embed
 
 MAPLE_GG = "https://maple.gg/u/"
@@ -14,10 +14,10 @@ def get_character_info(name):
     parser = fetch_maplegg_page(name)
 
     if not character_exists(parser):
-        return CharacterInfo(error=NO_SUCH_CHARACTER)
+        return EmbeddedMessage(error=NO_SUCH_CHARACTER)
 
     if not character_updated(name, parser):
-        return CharacterInfo(sync=True)
+        return EmbeddedMessage(sync=True)
 
     return parse_character_info(name, parser)
 
@@ -78,7 +78,7 @@ def parse_character_info(name, parser):
     
     img = get_character_image(name, character_img_url)
 
-    return CharacterInfo(embed=embed, img=img)
+    return EmbeddedMessage(embed=embed, img=img)
 
 
 def get_world_icon_url(parser):

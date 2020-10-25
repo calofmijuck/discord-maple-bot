@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 from .embeds import create_exp_embed
 from .exp_const import REQUIRED_EXP, CUMULATIVE_EXP, EXP_AT_250, EXP_AT_275
-from .CharacterInfo import CharacterInfo
+from .EmbeddedMessage import EmbeddedMessage
 from .util import encode, parse_int, get_character_image
 
 MAPLE_RANKING = "https://maplestory.nexon.com/Ranking/World/Total?c="
@@ -14,7 +14,7 @@ def get_experience_info(name):
     parser = fetch_ranking_page(name)
 
     if parser == None:
-        return CharacterInfo(error=NO_SUCH_CHARACTER)
+        return EmbeddedMessage(error=NO_SUCH_CHARACTER)
 
     return parse_experience_info(name, parser)
 
@@ -54,7 +54,7 @@ def parse_experience_info(name, parser):
 
     img = get_character_image(name, character_img_url)
 
-    return CharacterInfo(embed=embed, img=img)
+    return EmbeddedMessage(embed=embed, img=img)
 
 
 def get_world_icon_url(info):
