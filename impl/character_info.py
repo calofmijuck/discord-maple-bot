@@ -1,33 +1,32 @@
 from bs4 import BeautifulSoup
 from time import sleep
-import re
 import requests
-import discord
 
 from .util import parse_int, get_character_image, encode
-from .CharacterInfo import CharacterInfo
-from .embeds import create_embed
+from .EmbeddedMessage import EmbeddedMessage
+from .embeds import create_info_embed
 
 MAPLE_GG = "https://maple.gg/u/"
 NO_SUCH_CHARACTER = "캐릭터가 존재하지 않습니다."
 
 
 def get_character_info(name):
-    parser = fetch_info_page(name)
+    parser = fetch_maplegg_page(name)
 
     if not character_exists(parser):
-        return CharacterInfo(error=NO_SUCH_CHARACTER)
+        return EmbeddedMessage(error=NO_SUCH_CHARACTER)
 
     if not character_updated(name, parser):
-        return CharacterInfo(sync=True)
+        return EmbeddedMessage(sync=True)
 
     return parse_character_info(name, parser)
 
 
-def fetch_info_page(name):
+def fetch_maplegg_page(name):
     info_page = requests.get(MAPLE_GG + encode(name))
     parser = BeautifulSoup(info_page.content, 'html.parser')
     return parser
+
 
 def character_exists(parser):
     no_data = parser.find(class_="container mt-5 text-center")
@@ -64,7 +63,7 @@ def parse_character_info(name, parser):
     maple_union = get_maple_union_info(parser)
     achievements = get_achievements(parser)
 
-    embed = create_embed(
+    embed = create_info_embed(
         name=name,
         thumbnail=world_icon_url,
         user_summary=user_summary,
@@ -76,9 +75,10 @@ def parse_character_info(name, parser):
         maple_union=maple_union,
         achievements=achievements
     )
+    
     img = get_character_image(name, character_img_url)
 
-    return CharacterInfo(embed=embed, img=img)
+    return EmbeddedMessage(embed=embed, img=img)
 
 
 def get_world_icon_url(parser):
