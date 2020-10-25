@@ -1,4 +1,4 @@
-DOC_URL = "https://github.com"
+DOC_URL = "https://github.com/calofmijuck/discord-maple-bot/tree/main/help.md"
 
 def print_all_commands(commands, prefix):
     help_text_list = [
