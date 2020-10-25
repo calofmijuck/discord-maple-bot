@@ -5,6 +5,9 @@ from urllib import parse
 def format_thousands(n):
     return '{:,}'.format(n)
 
+def format_two_decimal(x):
+    return "{:.2f}".format(x).rstrip('0').rstrip('.')
+
 def parse_int(s):
     return int(s.replace(',', ''))
 

@@ -1,13 +1,11 @@
 from discord import Embed
-from decimal import *
 
-from .util import encode, format_thousands
+from .util import encode, format_thousands, format_two_decimal
 
 
 MAPLE_GG = "https://maple.gg/u/"
 ZWS = '\u200B'
 
-DECIMAL_CTX = getcontext().prec = 2
 
 def create_info_embed(
     name=None,
@@ -110,15 +108,19 @@ def create_exp_embed(
     embed.set_thumbnail(url=thumbnail)
     embed.set_image(url="attachment://image.png")
 
-    experience_text = format_thousands(experience) + " ({}%)".format(Decimal(curr_percent))
+    experience_text = format_thousands(
+        experience) + " (" + format_two_decimal(curr_percent) + "%)"
     embed.add_field(name="EXP", value=experience_text, inline=False)
 
-    embed.add_field(name="누적 경험치", value=format_thousands(total_exp), inline=False)
+    embed.add_field(name="누적 경험치", value=format_thousands(
+        total_exp), inline=False)
 
-    to_250_text = format_thousands(to_250[0]) + " ({}% 달성)".format(Decimal(to_250[1]))
+    to_250_text = format_thousands(
+        to_250[0]) + " (" + format_two_decimal(to_250[1]) + "%)"
     embed.add_field(name="Lv.250 까지", value=to_250_text, inline=False)
 
-    to_275_text = format_thousands(to_275[0]) + " ({}% 달성)".format(Decimal(to_275[1]))
-    embed.add_field(name="Lv.250 까지", value=to_275_text, inline=False)
-    
+    to_275_text = format_thousands(
+        to_275[0]) + " (" + format_two_decimal(to_275[1]) + "%)"
+    embed.add_field(name="Lv.275 까지", value=to_275_text, inline=False)
+
     return embed
