@@ -1,10 +1,7 @@
 import os
-import random
 import discord
-import requests
 from discord.ext import commands
 from dotenv import load_dotenv
-from urllib import parse
 from time import sleep
 
 
@@ -12,6 +9,7 @@ from time import sleep
 from impl.help import get_help_command
 from impl.character_info import get_character_info
 from impl.roll_dice import get_roll_result
+from impl.experience_info import get_experience_info
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -23,13 +21,17 @@ bot.remove_command('help')
 
 SYNCING = "정보 갱신 중입니다 :hourglass_flowing_sand:"
 
+
 @bot.event
 async def on_ready():
+    activity = discord.Activity(
+        type=discord.ActivityType.listening, name="MapleStory 명령")
+    await bot.change_presence(activity=activity)
     print(f'{bot.user} has connected to Discord!')
 
 
 @bot.command(
-    name="도움말", 
+    name="도움말",
     brief="도움말을 출력합니다"
 )
 async def help_command(ctx, *args):
@@ -72,6 +74,21 @@ async def character_info(ctx, name):
     else:
         await ctx.send(file=info.img, embed=info.embed)
 
+
+@bot.command(
+    name='경험치',
+    description="경험치 정보",
+    brief="경험치 정보를 확인",
+    usage="[닉네임]"
+)
+async def experience_info(ctx, name):
+    info = get_experience_info(name)
+    if info.error != None:
+        await ctx.send(info.error)
+    else:
+        await ctx.send(file=info.img, embed=info.embed)
+
+
 @bot.command(
     name='주사위',
     description='주사위 굴리기',
@@ -84,8 +101,8 @@ async def roll_dice(ctx):
 
 
 @bot.command(
-    name='stop', 
-    hidden=True, 
+    name='stop',
+    hidden=True,
     aliases=["ㄴ새ㅔ"]
 )
 @commands.is_owner()
