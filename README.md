@@ -2,6 +2,21 @@
 
 디스코드 메이플 봇입니다.
 
+## 봇 서버 세팅 방법
+
+- `.env` 파일을 다음과 같이 설정합니다.
+
+```text
+DISCORD_TOKEN="<your_discord_server_token>"
+```
+
+- 봇 실행
+
+```bash
+$ pip3 install -r requirements.txt
+$ python3 bot.py
+```
+
 ## 디스코드 서버에 추가
 - 아래 링크를 눌러 추가하면 됩니다.
 - 서버의 관리자 권한이 있어야 합니다.
