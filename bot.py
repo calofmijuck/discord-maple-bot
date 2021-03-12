@@ -20,6 +20,7 @@ bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 bot.remove_command('help')
 
 SYNCING = "정보 갱신 중입니다 :hourglass_flowing_sand:"
+SYNC_FAILED = "*정보 갱신에 실패했습니다. 캐릭터 이름: **{}***"
 MAX_UPDATE_REQUEST_COUNT = 5
 
 
@@ -66,10 +67,13 @@ async def character_info(ctx, name, count=0):
     count += 1
     if info.error != None:
         await ctx.send(info.error)
-    elif info.sync and count < MAX_UPDATE_REQUEST_COUNT:
-        await ctx.send(SYNCING)
-        sleep(5)
-        await character_info(ctx, name, count)
+    elif info.sync:
+        if count == MAX_UPDATE_REQUEST_COUNT:
+            await ctx.send(SYNC_FAILED.format(name))
+        else:
+            await ctx.send(SYNCING)
+            sleep(5)
+            await character_info(ctx, name, count)
     else:
         await ctx.send(file=info.img, embed=info.embed)
 
