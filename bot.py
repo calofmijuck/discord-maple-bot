@@ -20,6 +20,7 @@ bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 bot.remove_command('help')
 
 SYNCING = "정보 갱신 중입니다 :hourglass_flowing_sand:"
+MAX_UPDATE_REQUEST_COUNT = 5
 
 
 @bot.event
@@ -60,14 +61,15 @@ async def greetings(ctx, arg):
     description="캐릭터의 종합 정보를 확인합니다.",
     usage="[닉네임]"
 )
-async def character_info(ctx, name):
+async def character_info(ctx, name, count=0):
     info = get_character_info(name)
+    count += 1
     if info.error != None:
         await ctx.send(info.error)
-    elif info.sync:
+    elif info.sync and count < MAX_UPDATE_REQUEST_COUNT:
         await ctx.send(SYNCING)
         sleep(5)
-        await character_info(ctx, name)
+        await character_info(ctx, name, count)
     else:
         await ctx.send(file=info.img, embed=info.embed)
 
