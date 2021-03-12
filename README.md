@@ -11,9 +11,11 @@ DISCORD_TOKEN="<your_discord_server_token>"
 ```
 
 - 봇 실행
+  - 실행 전에 현재 폴더에 캐릭터 사진 저장을 위한 `char_img` 폴더를 생성합니다.
 
 ```bash
 $ pip3 install -r requirements.txt
+$ mkdir char_img
 $ python3 bot.py
 ```
 
